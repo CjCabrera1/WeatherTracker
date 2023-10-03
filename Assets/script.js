@@ -1,25 +1,17 @@
 var weatherAPIKey = "8a2c2f06a2efa59ec006a52375e7f41d";
 var todayDate = dayjs().format("MM/DD/YYYY")
 var city = "Chicago";
-var weatherURL = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${weatherAPIKey}&units=imperial`;
-var forecastURL = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${weatherAPIKey}&units=imperial`;
 var searchLog = JSON.parse(localStorage.getItem("searchedCity")) || [];
-
-
-function init() {
-  // Fetch and display the current weather for a default city on page load
-  fetchCurrentWeather(city);
-  updateSearchHistoryButtons();
-}
-
 $("#searchBtn").on("click", function (event) {
   event.preventDefault();
   city = $("#searchID").val();
   searchLog.push(city);
   localStorage.setItem("searchedCity", (JSON.stringify(searchLog)));
   $("#currentCity").text(city );
-  localStorage.setItem(city, "");
-  fetch(forecastURL).then(response => {
+  localStorage.setItem(city, "")
+  var weather = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${weatherAPIKey}&units=imperial`;
+
+  fetch(weather).then(response => {
     return response.json();
   })
   .then(data => {
@@ -30,36 +22,6 @@ $("#searchBtn").on("click", function (event) {
     }
 );
 
-function displayWeather(data) { // current weather
-  const weatherContainer = document.getElementById('weatherContainer');
-  weatherContainer.innerHTML = '';  // Clear previous content
-
-  if (!data.weather || data.weather.length === 0) {
-    weatherContainer.innerHTML = '<p>No weather data available.</p>';
-    return;
-  }
-
-  weatherContainer.innerHTML = `
-    <h2>${data.name}</h2>
-    <p>Date: ${new Date().toLocaleDateString()}</p>
-    <img src="http://openweathermap.org/img/w/${data.weather[0].icon}.png" alt="Weather icon">
-    <p>Temperature: ${data.main.temp} °F</p>
-    <p>Humidity: ${data.main.humidity}%</p>
-    <p>Wind Speed: ${data.wind.speed} m/s</p>
-  `;
-}
-
-// handles the 5 day forecast
-function displayForecast(data) {
-  const forecastContainer = document.getElementById('forecast');
-  forecastContainer.innerHTML = '';
-  for (let i = 0; i < data.list.length; i += 8) {
-    const dayData = data.list[i];
-    const date = dayjs(dayData.dt_txt).format('MM/DD/YYYY');
-    const dayCard = createDayCard(dayData, date);
-    forecastContainer.appendChild(dayCard);
-  }
-}
 function createDayCard(dayData, date) {
   const card = document.createElement('div');
   card.classList.add('card', 'col', 'g-0');
@@ -92,15 +54,51 @@ function createDayCard(dayData, date) {
   const windSpeed = document.createElement('p');
   windSpeed.textContent = `Wind Speed: ${dayData.wind.speed} m/s`;
   cardBody.appendChild(windSpeed);
+
   card.appendChild(cardBody);
 
   return card;
 }
   
+function displayWeather(data) { // current weather
+  const weatherContainer = document.getElementById('weatherContainer');
+  weatherContainer.innerHTML = '';  // Clear previous content
 
+  if (!data.weather || data.weather.length === 0) {
+    weatherContainer.innerHTML = '<p>No weather data available.</p>';
+    return;
+  }
 
+  weatherContainer.innerHTML = `
+    <h2>${data.name}</h2>
+    <p>Date: ${new Date().toLocaleDateString()}</p>
+    <img src="http://openweathermap.org/img/w/${data.weather[0].icon}.png" alt="Weather icon">
+    <p>Temperature: ${data.main.temp} °F</p>
+    <p>Humidity: ${data.main.humidity}%</p>
+    <p>Wind Speed: ${data.wind.speed} m/s</p>
+  `;
+}
+
+function displayForecast(data) {
+    const forecastContainer = document.getElementById('forecast');
+    forecastContainer.innerHTML = '';
+    for (let i = 0; i < data.list.length; i += 8) {
+      const dayData = data.list[i];
+      const date = dayjs(dayData.dt_txt).format('MM/DD/YYYY');
+      const dayCard = createDayCard(dayData, date);
+      forecastContainer.appendChild(dayCard);
+    }
+  }
+
+  function init() {
+  // Fetch and display the current weather for a default city on page load
+  fetchCurrentWeather(city);
+  updateSearchHistoryButtons();
+}
 
 function fetchCurrentWeather(city) {
+  const weatherAPIKey = "8a2c2f06a2efa59ec006a52375e7f41d";
+  const weatherURL = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${weatherAPIKey}&units=imperial`;
   fetch(weatherURL)
   .then(response => {
     return response.json();  // Parse response as JSON
@@ -110,7 +108,6 @@ function fetchCurrentWeather(city) {
   })
 }
 
-// Han
 function updateSearchHistoryButtons() {
   const searchHistoryDiv = document.getElementById('searchHistory');
   searchHistoryDiv.innerHTML = '';  // Clear previous content
@@ -122,8 +119,6 @@ function updateSearchHistoryButtons() {
       const button = document.createElement('button');
       button.classList.add('btn', 'btn-secondary', 'w-100', 'my-2');
       button.textContent = city;
-      weather = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${weatherAPIKey}&units=imperial`;
-
       button.addEventListener('click', function(event){
         event.preventDefault();
         fetchWeather(city);
@@ -133,6 +128,9 @@ function updateSearchHistoryButtons() {
 }
 
 function fetchWeather(city) {
+  const weatherURL = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${weatherAPIKey}&units=imperial`;
+  const forecastURL = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${weatherAPIKey}&units=imperial`;
+
   // Fetch current weather
   fetch(weatherURL)
     .then(response => response.json())

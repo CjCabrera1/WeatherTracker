@@ -1,6 +1,9 @@
 # 06 Server-Side APIs: Weather Dashboard
 The goal of this project was to create a weather tracker website with the use of an API. The user should be able to search for a city of their choice and the website should display the 5 day weather report. On page load the current weather should be defaulted to chicago. The current weather will also update based on the user's search. 
 
+
+## website
+https://cjcabrera1.github.io/WeatherTracker/
 ## Your Task
 
 Third-party APIs allow developers to access their data and functionality by making requests with specific parameters to a URL. Developers are often tasked with retrieving data from another application's API and using it in the context of their own. Your challenge is to build a weather dashboard that will run in the browser and feature dynamically updated HTML and CSS.
