@@ -1,17 +1,18 @@
 var weatherAPIKey = "8a2c2f06a2efa59ec006a52375e7f41d";
 var todayDate = dayjs().format("MM/DD/YYYY")
 var city = "Chicago";
+var weatherURL = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${weatherAPIKey}&units=imperial`;
+var forecastURL = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${weatherAPIKey}&units=imperial`;
 var searchLog = JSON.parse(localStorage.getItem("searchedCity")) || [];
+
 $("#searchBtn").on("click", function (event) {
   event.preventDefault();
   city = $("#searchID").val();
   searchLog.push(city);
   localStorage.setItem("searchedCity", (JSON.stringify(searchLog)));
   $("#currentCity").text(city );
-  localStorage.setItem(city, "")
-  var weather = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${weatherAPIKey}&units=imperial`;
-
-  fetch(weather).then(response => {
+  localStorage.setItem(city, "");
+  fetch(forecastURL).then(response => {
     return response.json();
   })
   .then(data => {
@@ -105,8 +106,6 @@ function displayForecast(data) {
 }
 
 function fetchCurrentWeather(city) {
-  const weatherAPIKey = "8a2c2f06a2efa59ec006a52375e7f41d";
-  const weatherURL = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${weatherAPIKey}&units=imperial`;
   fetch(weatherURL)
   .then(response => {
     return response.json();  // Parse response as JSON
@@ -138,9 +137,6 @@ function updateSearchHistoryButtons() {
 }
 
 function fetchWeather(city) {
-  const weatherURL = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${weatherAPIKey}&units=imperial`;
-  const forecastURL = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${weatherAPIKey}&units=imperial`;
-
   // Fetch current weather
   fetch(weatherURL)
     .then(response => response.json())
