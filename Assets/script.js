@@ -38,7 +38,7 @@ function createDayCard(dayData, date) {
   // Check if weather data is available
   if (dayData.weather && dayData.weather.length > 0) {
     const icon = document.createElement('img');
-    icon.src = `http://openweathermap.org/img/w/${dayData.weather[0].icon}.png`;
+    icon.src = `https://openweathermap.org/img/w/${dayData.weather[0].icon}.png`;
     icon.alt = 'Weather icon';
     cardBody.appendChild(icon);
   } else {
@@ -72,7 +72,7 @@ function displayWeather(data) { // current weather
   weatherContainer.innerHTML = `
     <h2>${data.name}</h2>
     <p>Date: ${new Date().toLocaleDateString()}</p>
-    <img src="http://openweathermap.org/img/w/${data.weather[0].icon}.png" alt="Weather icon">
+    <img src="https://openweathermap.org/img/w/${data.weather[0].icon}.png" alt="Weather icon">
     <p>Temperature: ${data.main.temp} °F</p>
     <p>Humidity: ${data.main.humidity}%</p>
     <p>Wind Speed: ${data.wind.speed} m/s</p>
