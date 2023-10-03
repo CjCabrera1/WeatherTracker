@@ -1,30 +1,26 @@
 var weatherAPIKey = "8a2c2f06a2efa59ec006a52375e7f41d";
-var geoForecast = "https://api.openweathermap.org/data/2.5/forecast?q=" + city + "&appid=" + weatherAPIKey;
 var todayDate = dayjs().format("MM/DD/YYYY")
-console.log(todayDate);
-
 var city = "Chicago";
-
-
+var searchLog = JSON.parse(localStorage.getItem("searchedCity")) || [];
 $("#searchBtn").on("click", function (event) {
-    event.preventDefault();
-    var currentCity = $("#searchID").val();
-    $("#currentCity").text(currentCity );
-    localStorage.setItem(currentCity, "")
-    var weather = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${weatherAPIKey}&units=imperial`;
+  event.preventDefault();
+  city = $("#searchID").val();
+  searchLog.push(city);
+  localStorage.setItem("searchedCity", (JSON.stringify(searchLog)));
+  $("#currentCity").text(city );
+  localStorage.setItem(city, "")
+  var weather = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${weatherAPIKey}&units=imperial`;
 
   fetch(weather).then(response => {
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
     return response.json();
   })
   .then(data => {
-    displayForecast(data);
+    fetchCurrentWeather(city);// current forecast
+    displayForecast(data); // future forecast
+    updateSearchHistoryButtons();// update search history buttons
   })
     }
 );
-
 
 function createDayCard(dayData, date) {
   const card = document.createElement('div');
@@ -52,11 +48,9 @@ function createDayCard(dayData, date) {
   const temperature = document.createElement('p');
   temperature.textContent = `Temperature: ${dayData.main.temp} °F`;
   cardBody.appendChild(temperature);
-
   const humidity = document.createElement('p');
   humidity.textContent = `Humidity: ${dayData.main.humidity}%`;
   cardBody.appendChild(humidity);
-
   const windSpeed = document.createElement('p');
   windSpeed.textContent = `Wind Speed: ${dayData.wind.speed} m/s`;
   cardBody.appendChild(windSpeed);
@@ -75,32 +69,27 @@ function generateForecastCards(weatherDataArray) {
 }
 
 function displayWeather(data) { // current weather
-    const weatherContainer = document.getElementById('forecast');
-    console.log('Weather data:', data);
-    
-    if (!data.weather || data.weather.length === 0) {
-      weatherContainer.innerHTML = '<p>No weather data available.</p>';
-      return;
-    }
-  
-    weatherContainer.innerHTML = `
-      <div class="weatherCard">
-        <h2>${data.name}</h2>
-        <p>Date: ${new Date().toLocaleDateString()}</p>
-        <img src="http://openweathermap.org/img/w/${data.weather[0].icon}.png" alt="Weather icon">
-        <p>Temperature: ${data.main.temp} °F</p>
-        <p>Humidity: ${data.main.humidity}%</p>
-        <p>Wind Speed: ${data.wind.speed} m/s</p>
-      </div>
-    `;
+  const weatherContainer = document.getElementById('weatherContainer');
+  weatherContainer.innerHTML = '';  // Clear previous content
+
+  if (!data.weather || data.weather.length === 0) {
+    weatherContainer.innerHTML = '<p>No weather data available.</p>';
+    return;
   }
 
+  weatherContainer.innerHTML = `
+    <h2>${data.name}</h2>
+    <p>Date: ${new Date().toLocaleDateString()}</p>
+    <img src="http://openweathermap.org/img/w/${data.weather[0].icon}.png" alt="Weather icon">
+    <p>Temperature: ${data.main.temp} °F</p>
+    <p>Humidity: ${data.main.humidity}%</p>
+    <p>Wind Speed: ${data.wind.speed} m/s</p>
+  `;
+}
+
 function displayForecast(data) {
-    console.log('Forecast data:', data);  // Log the data received
-  
     const forecastContainer = document.getElementById('forecast');
     forecastContainer.innerHTML = '';
-  
     for (let i = 0; i < data.list.length; i += 8) {
       const dayData = data.list[i];
       const date = dayjs(dayData.dt_txt).format('MM/DD/YYYY');
@@ -108,53 +97,63 @@ function displayForecast(data) {
       forecastContainer.appendChild(dayCard);
     }
   }
-  
-  // Call the function to generate forecast cards
 
+  function init() {
+  // Fetch and display the current weather for a default city on page load
+  fetchCurrentWeather(city);
+  updateSearchHistoryButtons();
+}
 
+function fetchCurrentWeather(city) {
+  const weatherAPIKey = "8a2c2f06a2efa59ec006a52375e7f41d";
+  const weatherURL = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${weatherAPIKey}&units=imperial`;
+  fetch(weatherURL)
+  .then(response => {
+    return response.json();  // Parse response as JSON
+  })
+  .then(data => {
+      displayWeather(data);
+  })
+}
 
-// # 06 Server-Side APIs: Weather Dashboard Psuedo
+function updateSearchHistoryButtons() {
+  const searchHistoryDiv = document.getElementById('searchHistory');
+  searchHistoryDiv.innerHTML = '';  // Clear previous content
 
-// 1. Setup HTML structure for the page, initialize JS variables
-//     - create layout sections for the search from, current weather data, forecast data, search history list
-//     - Define Api_key variable for the openweather API
-//     - Define base URL for the openwather API
-//     - Create variables to store references to HTML elements (e.g, searchForm, cityInput, currentWeatherContainer, forecastContainer, searchHistoryContainer)
+  const searchLog = JSON.parse(localStorage.getItem('searchedCity')) || [];
+  const uniqueCities = [...new Set(searchLog)];  // Get unique cities
 
-// 2. Event Listener for form submission 
-//     - Add submit event listener to searchForm element
-//     - prevent the default form submission
-//     - Get the users input from cityInput element
-//     - call a function (e.g, fetchWeatherData) with the user's input
+  uniqueCities.forEach(city => {
+      const button = document.createElement('button');
+      button.classList.add('btn', 'btn-secondary', 'w-100', 'my-2');
+      button.textContent = city;
+      weather = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${weatherAPIKey}&units=imperial`;
 
-// 3. Fetch weather data from OpenWeather API (fetchWeatherData function)
-//     - construct the API URL using the users input and API Key
-//     - fetch data from the API using the constructed URL
-//     - parse the JSON response
-//     - Handle errors (e.g, if the city is not found)
+      button.addEventListener('click', function(event){
+        event.preventDefault();
+        fetchWeather(city);
+      });
+      searchHistoryDiv.appendChild(button);
+  });
+}
 
-// 4. Display the current weather conditions (displayCurrentWeather function)
-//     - Extract relevant data from the API response (city name, date, icon, temp, humidity, and wind speed)
-//     - Create HTML elements to display this data
-//     - Update the currentWeatherContainer with the HTML elements
+function fetchWeather(city) {
+  const weatherURL = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${weatherAPIKey}&units=imperial`;
+  const forecastURL = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${weatherAPIKey}&units=imperial`;
 
-// 5. Display 5-day forecast (displayForecast function)
-//     - 5 day forecast requires lat and long, so we need to fiure out how to extract lat and long from our currentWeather response
-//     - Extract the 5-day forecast data from the API response
-//     - Loop through the forecast data and for each, create HTML elements to display (date, icon, temp, wind speed, humidity)
-//     - Append these to forecastContainer
+  // Fetch current weather
+  fetch(weatherURL)
+    .then(response => response.json())
+    .then(data => {
+      displayWeather(data); // Display current weather
+      // Fetch and display the 5-day forecast
+      fetch(forecastURL)
+        .then(response => response.json())
+        .then(data => {
+          displayForecast(data); // Display 5-day forecast
+        });
+    });
+}
 
-// 6. Update search history (updateSearchHistory function)
-//     - Add the searched City to the searchHistory array
-//     - Store the searchHistory array in local storage (setItem)
-
-// 7. Display search history (displaySearchHistory function)
-//     - Loop through the searchHistory array and create a clickable list of cities in the seachHistoryContainer
-//     - Add event listeners to the list of items to allow users to click and view data for a previous search
-
-// 8. Event listener for search history 
-//     - Add a click event listener to the searchHistoryContainer
-//     - When a city is clicked call the fetchWeatherData function with the selected city
-
-// 9. Initial page load
-//     - Load the search history from local storage and display using displaySearchHistory function
+// Call this function to initially populate the search history
+init();

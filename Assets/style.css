@@ -1,3 +1,11 @@
 header {
     text-align:center; 
 }
+#currentWeather{
+    text-align: center;
+}
+#fiveday{
+    text-align: center;
+    font-weight:bolder;
+    font-size: 2em;
+}
